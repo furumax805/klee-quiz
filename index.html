@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KleE Quiz — パウル・クレーの世界を旅する</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f5f4f0;--card:#fff;--text:#1a1a1a;--sub:#6b6b6b;--hint:#aaa;
+  --border:rgba(0,0,0,0.12);--border-mid:rgba(0,0,0,0.22);
+  --r-md:8px;--r-lg:14px;
+}
+body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:2rem 1rem 4rem;}
+.app{max-width:580px;margin:0 auto;position:relative;}
+.bg-deco{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;}
+.bg-s{position:absolute;border-radius:50%;opacity:.08;}
+.title{font-family:"Playfair Display",serif;font-size:2.1rem;font-weight:500;text-align:center;margin-bottom:.2rem;position:relative;z-index:1;}
+.subtitle{font-size:13px;color:var(--sub);text-align:center;margin-bottom:1.1rem;position:relative;z-index:1;}
+.xp-row{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);margin-bottom:.3rem;position:relative;z-index:1;}
+.xp-wrap{background:rgba(0,0,0,0.08);border-radius:99px;height:7px;overflow:hidden;margin-bottom:1.6rem;position:relative;z-index:1;}
+.xp-bar{height:100%;border-radius:99px;background:linear-gradient(90deg,#E24B4A,#EF9F27,#1D9E75);transition:width .6s cubic-bezier(.4,0,.2,1);width:0%;}
+.screen{position:relative;z-index:1;display:none;}
+.screen.active{display:block;}
+.card{background:var(--card);border:.5px solid var(--border);border-radius:var(--r-lg);padding:2rem;}
+/* start */
+.s-icon{font-size:3rem;display:block;text-align:center;margin-bottom:1rem;}
+.card h2{font-family:"Playfair Display",serif;font-size:1.45rem;font-weight:500;text-align:center;margin-bottom:.7rem;}
+.card p{font-size:14px;color:var(--sub);line-height:1.75;text-align:center;margin-bottom:1.4rem;}
+.badges{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:1.6rem;}
+.badge{font-size:12px;padding:4px 12px;border-radius:99px;font-weight:500;}
+.bc{background:#FAECE7;color:#993C1D;}
+.bt{background:#E1F5EE;color:#0F6E56;}
+.bb{background:#E6F1FB;color:#185FA5;}
+.ba{background:#FAEEDA;color:#854F0B;}
+/* stats */
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:1.4rem;}
+.stat{background:rgba(0,0,0,0.04);border-radius:var(--r-md);padding:.75rem;text-align:center;}
+.stat-n{font-size:1.3rem;font-weight:500;}
+.stat-l{font-size:11px;color:var(--sub);margin-top:2px;}
+/* btn */
+.btn{background:var(--text);color:#fff;border:none;border-radius:var(--r-md);padding:.8rem 2rem;font-size:15px;font-family:"DM Sans",sans-serif;font-weight:500;cursor:pointer;width:100%;transition:opacity .15s;}
+.btn:hover{opacity:.78;}
+.btn:disabled{opacity:.35;cursor:not-allowed;}
+/* quiz */
+.q-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem;}
+.q-count{font-size:13px;color:var(--sub);}
+.q-genre{font-size:11px;padding:3px 10px;border-radius:99px;font-weight:500;}
+.q-text{font-family:"Playfair Display",serif;font-size:1.15rem;font-weight:500;line-height:1.65;margin-bottom:1.4rem;}
+.choices{display:flex;flex-direction:column;gap:10px;margin-bottom:1.2rem;}
+.choice{background:rgba(0,0,0,0.04);border:.5px solid var(--border);border-radius:var(--r-md);padding:.75rem 1rem;font-size:14px;font-family:"DM Sans",sans-serif;color:var(--text);text-align:left;cursor:pointer;transition:border-color .15s,background .15s;line-height:1.5;}
+.choice:hover:not(:disabled){border-color:var(--border-mid);background:#fff;}
+.choice.ok{background:#E1F5EE;border-color:#1D9E75;color:#085041;}
+.choice.ng{background:#FCEBEB;border-color:#E24B4A;color:#501313;}
+.choice:disabled{cursor:default;}
+.reveal-btn{background:none;border:none;font-size:12px;color:var(--sub);cursor:pointer;padding:0 0 .5rem;display:flex;align-items:center;gap:5px;font-family:"DM Sans",sans-serif;transition:color .15s;}
+.reveal-btn:hover{color:var(--text);}
+.ans-box{background:#FAEEDA;border-radius:var(--r-md);padding:.6rem .9rem;font-size:13px;font-weight:500;color:#854F0B;margin-bottom:.7rem;display:none;}
+.exp-box{background:rgba(0,0,0,0.04);border-radius:var(--r-md);padding:1rem;font-size:13px;color:var(--sub);line-height:1.75;border-left:3px solid #1D9E75;}
+.exp-box.ng{border-left-color:#E24B4A;}
+.bottom{display:flex;justify-content:flex-end;margin-top:1rem;}
+.btn-next{background:var(--text);color:#fff;border:none;border-radius:var(--r-md);padding:.65rem 1.5rem;font-size:14px;font-family:"DM Sans",sans-serif;font-weight:500;cursor:pointer;transition:opacity .15s;}
+.btn-next:hover{opacity:.78;}
+/* result */
+.result-card{text-align:center;}
+.r-lbl{font-size:13px;color:var(--sub);margin-bottom:.2rem;}
+.r-score{font-family:"Playfair Display",serif;font-size:4rem;font-weight:500;line-height:1;margin-bottom:.2rem;}
+.r-sub{font-size:13px;color:var(--sub);margin-bottom:1.2rem;}
+.lv-badge{display:inline-flex;align-items:center;gap:6px;background:#FAEEDA;color:#854F0B;border-radius:99px;padding:6px 16px;font-size:13px;font-weight:500;margin-bottom:1rem;}
+.r-msg{font-size:15px;line-height:1.75;margin-bottom:1.75rem;}
+.footer{text-align:center;margin-top:2.5rem;font-size:12px;color:var(--hint);position:relative;z-index:1;}
+</style>
+</head>
+<body>
+<div class="bg-deco">
+  <div class="bg-s" style="width:300px;height:300px;background:#D4537E;top:-100px;left:-100px;"></div>
+  <div class="bg-s" style="width:220px;height:220px;background:#1D9E75;top:50px;right:-60px;border-radius:30% 70% 70% 30%;"></div>
+  <div class="bg-s" style="width:180px;height:180px;background:#EF9F27;bottom:80px;left:10%;border-radius:60% 40%;"></div>
+  <div class="bg-s" style="width:130px;height:130px;background:#378ADD;bottom:150px;right:8%;border-radius:40% 60% 30% 70%;"></div>
+</div>
+
+<div class="app">
+  <div class="title">KleE Quiz</div>
+  <div class="subtitle">パウル・クレーの世界を旅する</div>
+  <div class="xp-row"><span id="lvLabel">Lv.1</span><span id="xpLabel">0 / 100 XP</span></div>
+  <div class="xp-wrap"><div class="xp-bar" id="xpBar"></div></div>
+
+  <!-- START -->
+  <div class="screen active" id="sStart">
+    <div class="card">
+      <span class="s-icon">🎨</span>
+      <h2>心眼を開く10問</h2>
+      <p>作品・生涯・思想・バウハウスとの関係。<br>105問のストックからランダムに出題。</p>
+      <div class="badges">
+        <span class="badge bc">作品・絵画</span>
+        <span class="badge bt">生涯・エピソード</span>
+        <span class="badge bb">思想・名言</span>
+        <span class="badge ba">バウハウス</span>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="stat-n" id="stTotal">0</div><div class="stat-l">累計挑戦</div></div>
+        <div class="stat"><div class="stat-n" id="stCorrect">0</div><div class="stat-l">累計正解</div></div>
+        <div class="stat"><div class="stat-n" id="stRate">—</div><div class="stat-l">正解率</div></div>
+      </div>
+      <button class="btn" id="startBtn" onclick="startQuiz()">クイズをはじめる</button>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div class="screen" id="sQuiz">
+    <div class="card">
+      <div class="q-meta">
+        <span class="q-count" id="qCount">1 / 10</span>
+        <span class="q-genre badge" id="qGenre"></span>
+      </div>
+      <div class="q-text" id="qText"></div>
+      <div class="choices" id="choicesWrap"></div>
+      <div id="expSection" style="display:none">
+        <button class="reveal-btn" id="revealBtn" onclick="toggleReveal()" style="display:none">
+          <span id="revealArrow">▶</span> 正解を見る
+        </button>
+        <div class="ans-box" id="ansBox"></div>
+        <div class="exp-box" id="expBox"></div>
+      </div>
+      <div class="bottom">
+        <button class="btn-next" id="nextBtn" style="display:none" onclick="next()">次の問題 →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="screen" id="sResult">
+    <div class="card result-card">
+      <div class="r-lbl">あなたのスコア</div>
+      <div class="r-score" id="rScore">0 / 10</div>
+      <div class="r-sub">正解数</div>
+      <div id="lvBadge" style="display:none" class="lv-badge"></div>
+      <div class="r-msg" id="rMsg"></div>
+      <button class="btn" onclick="reset()">もう一度挑戦する</button>
+    </div>
+  </div>
+
+  <div class="footer">見えるようになること、それが旅のはじまり。</div>
+</div>
+
+<script>
+const ALL = [{"genre":"生涯・エピソード","question":"パウル・クレーが生まれた年はいつ？","choices":["1869年","1879年","1889年","1899年"],"answer":1,"explanation":"クレーは1879年12月18日、スイスのベルン郊外ミュンヘンブーフゼーで生まれた。父は音楽教師、母は声楽家という芸術的な家庭環境に育った。"},{"genre":"生涯・エピソード","question":"クレーの父親の職業は？","choices":["画家","彫刻家","音楽教師","建築家"],"answer":2,"explanation":"父のハンス・クレーはドイツ人の音楽教師で、スイスのベルンで教鞭をとっていた。クレーは幼少期からヴァイオリンを習い、音楽と美術の両方に深く親しんだ。"},{"genre":"生涯・エピソード","question":"クレーが美術を学ぶために留学した都市はどこ？","choices":["パリ","ウィーン","ミュンヘン","ベルリン"],"answer":2,"explanation":"クレーは18歳でミュンヘンに留学し、美術を学んだ。当初はハインリヒ・クニルの画塾に通い、後にミュンヘン美術アカデミーに入学した。"},{"genre":"生涯・エピソード","question":"クレーが1914年に訪れた旅行先はどこ？","choices":["エジプト","モロッコ","チュニジア","アルジェリア"],"answer":2,"explanation":"1914年、クレーは友人のアウグスト・マッケ、ルイ・モワイエとともにチュニジアを旅した。この旅での強烈な光と色彩の体験が、彼の芸術に革命的な変化をもたらした。"},{"genre":"生涯・エピソード","question":"チュニジア旅行でクレーが日記に書いた有名な言葉は？","choices":["\"線が私を解放した\"","\"色彩がぼくをとらえた\"","\"形が語り始めた\"","\"光が真実を見せた\""],"answer":1,"explanation":"「色彩がぼくをとらえた。ぼくと色彩は一つだ。私は画家だ」というクレーの言葉は、チュニジア旅行が彼の芸術的転機となったことを示している。"},{"genre":"生涯・エピソード","question":"クレーの妻の名前は？","choices":["エルザ・クレー","リリー・クレー","アンナ・クレー","マリア・クレー"],"answer":1,"explanation":"クレーは1906年にピアニストのリリー・シュトゥンプフと結婚した。リリーはピアノ教師として家計を支え、クレーが創作に専念できる環境を整えた。"},{"genre":"生涯・エピソード","question":"クレーの息子の名前は？","choices":["ハンス","フェリックス","カール","エミール"],"answer":1,"explanation":"クレーの息子フェリックス・クレーは1907年生まれ。後に父の遺稿を編集・出版し、クレーの芸術を後世に伝える重要な役割を果たした。"},{"genre":"生涯・エピソード","question":"クレーが晩年に患った難病の名前は？","choices":["パーキンソン病","強皮症（皮膚硬化症）","多発性硬化症","筋萎縮性側索硬化症"],"answer":1,"explanation":"クレーは1935年頃から強皮症（皮膚硬化症）を発症し、手の動きが徐々に制限されるようになった。それでも創作を続け、晩年には独自の力強い表現スタイルを生み出した。"},{"genre":"生涯・エピソード","question":"クレーが亡くなった年はいつ？","choices":["1938年","1940年","1942年","1944年"],"answer":1,"explanation":"クレーは1940年6月29日、スイスのムラルトで亡くなった。強皮症との闘いの中でも、亡くなる直前まで精力的に作品を制作し続けた。"},{"genre":"生涯・エピソード","question":"ナチス政権によって「退廃芸術」として没収されたクレーの作品数は約何点？","choices":["約30点","約102点","約250点","約500点"],"answer":1,"explanation":"1937年の「退廃芸術展」でクレーの102点の作品が没収・晒し者にされた。ナチスはモダニズム芸術を「退廃的」と見なし、クレーを含む多くの前衛芸術家を弾圧した。"},{"genre":"生涯・エピソード","question":"クレーがナチスの弾圧を受けて亡命した国はどこ？","choices":["フランス","イギリス","スイス","アメリカ"],"answer":2,"explanation":"1933年にナチスがドイツを支配すると、クレーは自宅が警察に捜索されるなどの弾圧を受け、故郷のスイス・ベルンに亡命した。"},{"genre":"生涯・エピソード","question":"クレーが参加した芸術グループ「青騎士」の結成年は？","choices":["1908年","1910年","1911年","1914年"],"answer":2,"explanation":"「青騎士（デア・ブラウエ・ライター）」は1911年にカンディンスキーとフランツ・マルクが中心となって結成した芸術グループ。クレーも後に参加し、彼らと交流を深めた。"},{"genre":"生涯・エピソード","question":"クレーが初めて公式に作品を発表した展覧会は？","choices":["バウハウス展","ミュンヘン分離派展","青騎士展","デッサウ芸術展"],"answer":1,"explanation":"クレーは1905年のミュンヘン分離派展に10点のエッチング連作「インヴェンジョン」を出展した。これを自身の「自筆総目録」の作品番号1番とした。"},{"genre":"生涯・エピソード","question":"クレーが1920年に開催した大回顧展を開いた都市は？","choices":["ベルリン","ミュンヘン","チューリヒ","ウィーン"],"answer":1,"explanation":"1920年、クレーはミュンヘンの画廊ゴルツで大回顧展を開催し、一躍注目を集めた。この展覧会はクレーの芸術家としての地位を確立する重要な転機となった。"},{"genre":"生涯・エピソード","question":"クレーが第一次世界大戦中に従軍した期間は？","choices":["1914〜1916年","1915〜1917年","1916〜1918年","1917〜1919年"],"answer":2,"explanation":"クレーは1916年から1918年にかけて従軍した。戦場での過酷な体験は彼に深い影響を与えたが、友人のフランツ・マルクやアウグスト・マッケが戦死したことは特に大きな悲しみをもたらした。"},{"genre":"バウハウス","question":"クレーがバウハウスで教え始めたのは何年？","choices":["1919年","1921年","1923年","1925年"],"answer":1,"explanation":"クレーは1921年にバウハウスへ招かれ、デッサウ移転後の1931年に退職するまで約10年間教壇に立った。色彩論や造形理論を体系化した講義は現在も重要な芸術教育の文献として残っている。"},{"genre":"バウハウス","question":"バウハウスの創設者は誰？","choices":["パウル・クレー","ワシリー・カンディンスキー","ワルター・グロピウス","ミース・ファン・デル・ローエ"],"answer":2,"explanation":"バウハウスは1919年にワルター・グロピウスによってドイツのヴァイマールに創設された。美術・工芸・建築を統合した近代デザイン教育の革命的な学校として世界的な影響を与えた。"},{"genre":"バウハウス","question":"バウハウスがヴァイマールからデッサウに移転したのは何年？","choices":["1923年","1924年","1925年","1926年"],"answer":2,"explanation":"バウハウスはヴァイマールでの政治的圧力を受け、1925年にデッサウに移転した。デッサウ時代はバウハウスの黄金期とも呼ばれ、グロピウス設計の新校舎で教育が行われた。"},{"genre":"バウハウス","question":"バウハウスでクレーと共に教鞭をとっていた盟友は？","choices":["ピカソ","マティス","カンディンスキー","モンドリアン"],"answer":2,"explanation":"カンディンスキーはバウハウスでクレーの最も親しい同僚だった。デッサウでは隣同士の「マイスターハウス」に住み、芸術観について深く語り合う関係を築いた。"},{"genre":"バウハウス","question":"バウハウスでクレーが主に担当した工房はどれ？","choices":["金属工房","陶芸工房","織物工房・ステンドグラス工房","木工工房"],"answer":2,"explanation":"クレーはバウハウスで主に織物工房とステンドグラス工房のマイスター（工房長）を担当した。また色彩論や造形理論の講義も行い、多くの学生に影響を与えた。"},{"genre":"バウハウス","question":"クレーがバウハウスでの講義をまとめた著書のタイトルは？","choices":["「芸術と生活」","「線と形」","「造形思考」","「色彩の理論」"],"answer":2,"explanation":"「造形思考（Das bildnerische Denken）」はバウハウスでのクレーの講義録をまとめたもの。造形の基本原理から色彩論まで体系的に論じ、現代美術教育のバイブル的存在となっている。"},{"genre":"バウハウス","question":"バウハウスが最終的に閉校したのは何年？","choices":["1931年","1932年","1933年","1934年"],"answer":2,"explanation":"バウハウスはナチスの圧力によって1933年に閉校を余儀なくされた。ベルリンへの移転後も弾圧は続き、自主閉校という形でその歴史に幕を閉じた。"},{"genre":"バウハウス","question":"バウハウスが最初に設立された都市はどこ？","choices":["ベルリン","デッサウ","ヴァイマール","ハンブルク"],"answer":2,"explanation":"バウハウスは1919年にドイツのヴァイマールに設立された。政治的な圧力からデッサウ、ベルリンへと移転を繰り返し、最終的に1933年に閉校した。"},{"genre":"バウハウス","question":"クレーがデッサウ時代に住んでいた建物の名称は？","choices":["バウハウス本校舎","マイスターハウス","デッサウ芸術館","グロピウスハウス"],"answer":1,"explanation":"バウハウスのマイスター（教師）たちはグロピウスが設計した「マイスターハウス」に住んでいた。クレーとカンディンスキーは双子棟の隣同士に住み、日常的に交流した。"},{"genre":"バウハウス","question":"バウハウス設立の理念として最も正確なものは？","choices":["純粋芸術の追求","美術と工芸と建築の統合","国家のための芸術振興","伝統工芸の復興"],"answer":1,"explanation":"バウハウスは「芸術と技術の統合」を理念に掲げ、美術・工芸・建築を横断した総合的なデザイン教育を目指した。この革新的な思想は現代デザイン教育の礎となっている。"},{"genre":"バウハウス","question":"クレーがバウハウスを去った後に就任した職は？","choices":["ベルリン美術大学教授","デュッセルドルフ美術アカデミー教授","チューリヒ工科大学教授","ミュンヘン美術アカデミー教授"],"answer":1,"explanation":"クレーはバウハウスを1931年に退職後、デュッセルドルフ美術アカデミーの教授に就任した。しかしナチスの台頭により1933年に休職を命じられ、スイスへ亡命することになった。"},{"genre":"バウハウス","question":"バウハウスで「予備課程」を担当した芸術家として有名なのは？","choices":["パウル・クレー","ヨハネス・イッテン","ラースロー・モホリ＝ナジ","オスカー・シュレンマー"],"answer":1,"explanation":"ヨハネス・イッテンはバウハウス初期に「予備課程（Vorkurs）」を担当し、学生に造形の基礎を教えた。後にモホリ＝ナジがこの課程を引き継いだ。"},{"genre":"バウハウス","question":"クレーがバウハウスで教えた期間として正しいのは？","choices":["約5年","約10年","約15年","約3年"],"answer":1,"explanation":"クレーは1921年から1931年まで約10年間バウハウスで教えた。ヴァイマール時代からデッサウ時代にかけて、色彩論・造形論・絵画理論など多岐にわたる講義を行った。"},{"genre":"バウハウス","question":"バウハウスの校章・ロゴを手がけたのは誰？","choices":["クレー","カンディンスキー","オスカー・シュレンマー","モホリ＝ナジ"],"answer":2,"explanation":"オスカー・シュレンマーはバウハウスの校章（人体を幾何学的に表現したロゴ）を手がけた。彼はバウハウスの舞台芸術工房も担当し、「トリアディック・バレエ」などの先駆的な作品を生み出した。"},{"genre":"バウハウス","question":"バウハウスのデッサウ校舎を設計した人物は？","choices":["ミース・ファン・デル・ローエ","ル・コルビュジエ","ワルター・グロピウス","フランク・ロイド・ライト"],"answer":2,"explanation":"デッサウのバウハウス校舎はグロピウス自身が設計し、1926年に完成した。ガラスカーテンウォールを多用したモダニズム建築の傑作として現在も世界遺産に登録されている。"},{"genre":"思想・名言","question":"「芸術の役割は、見えるものをそのまま表現するのではなく、○○することだ」○○に入るのは？","choices":["記録","批判","見えるように","変革"],"answer":2,"explanation":"クレーの最も有名な言葉の一つで、芸術の本質を「可視化」に見出している。目に見えない内面や宇宙の法則を絵画によって「見えるようにする」ことをクレーは芸術の使命と考えた。"},{"genre":"思想・名言","question":"クレーが述べた「線」の定義として正しいのは？","choices":["最短距離を結ぶもの","点が動いた軌跡","形を囲むもの","空間を分けるもの"],"answer":1,"explanation":"クレーは「線とは、散歩に出かけた点である」と述べた。線を静止した形としてではなく、動きとプロセスとして捉えたこの視点は、彼の造形理論の核心をなしている。"},{"genre":"思想・名言","question":"クレーが芸術家を何に喩えた有名な比喩は？","choices":["鑑賞者の案内人","木の幹","光の職人","色彩の詩人"],"answer":1,"explanation":"クレーは芸術家を「木の幹」に喩えた。大地（自然・現実）から養分を吸い上げ、それを樹冠（芸術作品）として天に向かって広げる存在。芸術家は媒介者であり、創造主ではないという思想。"},{"genre":"思想・名言","question":"クレーが「より深い理解の土地へ」と表現したものは？","choices":["バウハウスでの教育","小旅行（芸術の探求）","チュニジアへの旅","内面への瞑想"],"answer":1,"explanation":"クレーは「より深い理解の土地へ小旅行に出かけること」を芸術の本質と述べた。芸術とは表面的な現実ではなく、その奥に潜む本質を探求する旅であるという考え方。"},{"genre":"思想・名言","question":"クレーが子どもの絵について述べた見解として正しいのは？","choices":["技術的に劣るもの","真の芸術的本能の表れ","教育が必要なもの","模倣に過ぎないもの"],"answer":1,"explanation":"クレーは子どもや精神障害者の絵に純粋な芸術的価値を見出した。社会的な規範や技術的な制約から解放された表現に、芸術の本質があると考えたのである。"},{"genre":"思想・名言","question":"クレーの芸術における「能動性」の意味として正しいのは？","choices":["権威への反抗","外部評価の獲得","内側から溢れる衝動","社会変革への意志"],"answer":2,"explanation":"クレーが重視した「能動性」は、外部からの命令や流行に従うのではなく、内面から自然に湧き出るエネルギーによって創造することを意味した。これは「自由」とは異なる積極的な姿勢である。"},{"genre":"思想・名言","question":"クレーが晩年に残した言葉「この世では私を理解することなど○○」の続きは？","choices":["難しい","永遠にできない","まだできない","決してできない"],"answer":3,"explanation":"「この世では、私を理解することなど決してできない。なぜなら私は、死者たちだけでなく、未だ生まれざる者たちとも一緒に住んでいるのだから」というクレーの言葉は、彼の時代を超えた芸術観を示している。"},{"genre":"思想・名言","question":"クレーの日記「クレーの日記」が記された主な期間は？","choices":["1898〜1918年","1905〜1925年","1900〜1930年","1910〜1940年"],"answer":0,"explanation":"クレーは1898年から1918年にかけて克明な日記を記した。この日記は彼の芸術観・世界観の発展を追う重要な一次資料として、現在も多くの研究者に参照されている。"},{"genre":"思想・名言","question":"クレーが芸術において「プロセス」を重視した理由として最も適切なのは？","choices":["完成作品より制作費がかからないから","絵画を結果ではなく動きとして捉えていたから","観客が理解しやすいから","バウハウスの教育方針だったから"],"answer":1,"explanation":"クレーは絵画を「完成された結果」ではなく、形が生まれる「プロセス（動き）」として捉えた。線が引かれる瞬間、色が置かれる瞬間に芸術の本質があると考えたのである。"},{"genre":"思想・名言","question":"クレーが影響を受けた音楽家として最も深い関係があるのは？","choices":["ベートーヴェン","バッハ","モーツァルト","ドビュッシー"],"answer":1,"explanation":"クレーはバッハを深く愛し、バッハの音楽の対位法的構造が彼の絵画構成に大きな影響を与えたとされる。クレー自身も優秀なヴァイオリニストであり、音楽と絵画の関係を常に意識していた。"},{"genre":"思想・名言","question":"クレーが述べた「絵を描くこと」の本質として正しいのは？","choices":["技術の完成","自然の模倣","宇宙の法則の可視化","感情の発散"],"answer":2,"explanation":"クレーは絵画を宇宙の法則や自然の内的構造を可視化する行為と捉えた。単なる感情表現や自然の模倣ではなく、目に見えない本質的な法則を画面に現すことが創作の核心だと考えた。"},{"genre":"思想・名言","question":"クレーが「創造的信条告白」を発表した年は？","choices":["1918年","1920年","1922年","1924年"],"answer":1,"explanation":"クレーは1920年に「創造的信条告白（Schöpferische Konfession）」を発表した。この文章はクレーの芸術哲学を簡潔かつ詩的に表現したものとして、現代美術思想の重要な文献となっている。"},{"genre":"思想・名言","question":"クレーの芸術が「表現主義」「超現実主義」のどちらにも完全には属さない理由は？","choices":["技法が特殊すぎるから","どちらの運動よりも先行していたから","独自の造形思想を持っていたから","商業的な理由から"],"answer":2,"explanation":"クレーは表現主義・超現実主義・抽象主義など複数の運動と親近性を持ちながら、どれにも完全に帰属しなかった。それは彼が独自の「造形思考」に基づいた、極めて個人的な芸術世界を構築していたからである。"},{"genre":"思想・名言","question":"クレーが重視した「見えないものを見えるようにする」という概念において、「見えないもの」とは何か？","choices":["未来の出来事","内的・宇宙的な本質的法則","幻覚や夢","過去の記憶"],"answer":1,"explanation":"クレーが「見えないもの」と表現したのは、目には見えない内面の真実や自然・宇宙の本質的な構造・法則のこと。芸術の役割はこれを可視化し、観る者に「見る目」を与えることだと考えた。"},{"genre":"作品・絵画","question":"クレーの代表作「セネシオ」が描かれた年は？","choices":["1918年","1920年","1922年","1924年"],"answer":2,"explanation":"「セネシオ」（1922年）は老人の顔を幾何学的に単純化した作品。セネシオはキク科の植物の名で、老いを暗示している。バウハウス在籍中の作品で、クレーの造形理論が凝縮された代表作の一つ。"},{"genre":"作品・絵画","question":"クレーが制作した作品の総数として知られているのは？","choices":["約1000点","約3000点","約9000点","約15000点"],"answer":2,"explanation":"クレーは生涯に約9000点以上の作品を制作したとされる。これは驚異的な多産ぶりで、絵画・素描・水彩画など多様な媒体を用いた作品群が世界各地の美術館に収蔵されている。"},{"genre":"作品・絵画","question":"スイス・ベルンにあるクレーの作品を専門に収蔵する美術館の名称は？","choices":["クレー美術館","ツェントルム・パウル・クレー","ベルン近代美術館","パウル・クレー・ハウス"],"answer":1,"explanation":"「ツェントルム・パウル・クレー（パウル・クレー・センター）」は2005年にベルンにオープンした。約4000点のクレー作品を収蔵し、世界最大のクレー専門美術館として知られている。"},{"genre":"作品・絵画","question":"クレーの作品で「冒険者の船」に代表される傾向として正しいのは？","choices":["純粋な抽象","詩的・物語的タイトルと視覚の融合","写実的な表現","建築的な構成"],"answer":1,"explanation":"クレーは作品に詩的・文学的なタイトルをつけることで有名で、「冒険者の船」「あちこちに点々と」など視覚と言語が融合した独特の世界観を作り上げた。"},{"genre":"作品・絵画","question":"クレーが好んで使用した技法として特徴的なのは？","choices":["油彩のみ","多様な支持体と画材の組み合わせ","フレスコ","版画のみ"],"answer":1,"explanation":"クレーは新聞紙・厚紙・布・ガーゼなど様々な支持体に、油彩・水彩・テンペラ・糊絵具などを組み合わせた実験的な技法を多用した。この素材への探求もクレー芸術の重要な特徴である。"},{"genre":"作品・絵画","question":"クレーの作品サイズの特徴として正しいのは？","choices":["大型作品が多い","小型作品が多い","すべて正方形","横長の作品のみ"],"answer":1,"explanation":"クレーの作品はサイズの小さいものが多いことで知られる。縦横ともに1メートルを超える作品は例外的で、繊細で親密なスケールの作品が大半を占めている。"},{"genre":"作品・絵画","question":"クレーが北斎の影響を受けて模写した作品は？","choices":["富嶽三十六景","北斎漫画の一場面","神奈川沖浪裏","百物語"],"answer":1,"explanation":"クレーは北斎漫画の四編を「宙返りする女性の裸体」として模写した。日本美術への関心は当時のヨーロッパ前衛芸術家に共通した傾向で、クレーもその影響を受けていた。"},{"genre":"作品・絵画","question":"クレーの作品「パルナッソス山へ」の特徴として正しいのは？","choices":["クレーの作品中最小の作品","縦横ともに1メートルを超える例外的な大作","水彩のみで制作","ナチスに没収された作品"],"answer":1,"explanation":"「パルナッソス山へ」（1932年）はクレーの作品の中で例外的に大きなサイズで、縦横ともに1メートルを超える。多彩な色の小さな長方形が積み重なるモザイク状の構成が特徴的。"},{"genre":"作品・絵画","question":"クレーの晩年作品の特徴として最も正確なものは？","choices":["精緻な細密描写","単純化された太い線と力強い形","明るい色彩の使用","写実的な風景画"],"answer":1,"explanation":"強皮症により手の動きが制限された晩年、クレーは単純化された太い線と大胆な形による独自のスタイルを発展させた。この時期の作品は「天使シリーズ」など内省的で力強い表現が特徴。"},{"genre":"作品・絵画","question":"クレーが晩年に集中的に制作したシリーズは？","choices":["魚のシリーズ","天使のシリーズ","植物のシリーズ","建築のシリーズ"],"answer":1,"explanation":"晩年のクレーは「天使」をテーマにした作品を集中的に制作した。単純化された線で描かれた様々な天使たちは、死を意識した深い内省と霊的な探求を反映している。"},{"genre":"作品・絵画","question":"クレーの「死と炎」が制作された年として正しいのは？","choices":["1935年","1937年","1938年","1940年"],"answer":3,"explanation":"「死と炎」（1940年）は死の直前に制作されたクレーの晩年の代表作。骸骨のような顔と炎のイメージが組み合わされた作品で、自身の死を予感していたかのような深い哲学性を持つ。"},{"genre":"作品・絵画","question":"クレーが愛したとされる楽器は？","choices":["ピアノ","チェロ","ヴァイオリン","フルート"],"answer":2,"explanation":"クレーは11歳でベルンのオーケストラに入団するほどのヴァイオリンの才能を持っていた。音楽家になるか画家になるか最後まで迷ったとされ、音楽はクレーの芸術全体に深く影響している。"},{"genre":"作品・絵画","question":"クレーの作品「魚の魔法」(Fish Magic)について正しいのは？","choices":["完全な抽象作品","魚と人物が混在する幻想的な空間","リアルな海中の描写","モザイク状の構成"],"answer":1,"explanation":"「魚の魔法」（1925年）は魚・植物・人物・時計などが幻想的に共存する作品。深い暗闇の中に浮かぶ様々なイメージが独特の詩的世界を形成し、シュルレアリスムとの親近性も指摘される。"},{"genre":"作品・絵画","question":"クレーがチュニジア旅行後に制作した水彩画の特徴は？","choices":["暗く重い色調","鮮やかな色彩と幾何学的構成","写実的な風景描写","白黒の線描"],"answer":1,"explanation":"チュニジア旅行後のクレーの作品は、鮮やかな色彩と幾何学的な構成が融合したものへと変化した。強烈な地中海の光と色彩が彼の色彩感覚を根本から変えたのである。"},{"genre":"作品・絵画","question":"クレーの「赤い気球」（1922年）について正しいのは？","choices":["油彩の大作","小さなキャンバスに描かれた水彩・油彩作品","版画作品","ステンドグラスのデザイン"],"answer":1,"explanation":"「赤い気球」はバウハウス時代の1922年に制作された作品。幾何学的な形と鮮やかな色彩の組み合わせが特徴で、建物の群れの上に浮かぶ赤い円が印象的。ニューヨーク近代美術館（MoMA）所蔵。"},{"genre":"作品・絵画","question":"クレーの「ツィッツィバウム」（Zwitscher-Maschine、1922年）は何を描いた作品？","choices":["機械仕掛けの鳥のさえずり機","工業都市の風景","音楽の楽譜","バウハウスの校舎"],"answer":0,"explanation":"「さえずり機械」とも呼ばれるこの作品は、機械仕掛けの棒に止まった4羽の鳥を描いたもの。ハンドルを回すと鳥がさえずるという奇妙な装置を描いており、機械文明へのユーモラスな批評とも解釈される。"},{"genre":"作品・絵画","question":"クレーが「教育スケッチブック」（バウハウス叢書2）で解説した主な内容は？","choices":["色彩理論","線と点の造形理論","立体構成","版画技法"],"answer":1,"explanation":"「教育スケッチブック」（1925年）はバウハウス叢書の一冊として出版され、線・面・空間の関係を平易に解説したもの。クレーの造形理論の入門書として今日でも広く読まれている。"},{"genre":"作品・絵画","question":"クレーの「古城」（Ancient Sound）について正しいのは？","choices":["リアルな城の描写","正方形を積み重ねた抽象的な構成","版画作品","風景画"],"answer":1,"explanation":"「古城（アンシェント・サウンド）」（1925年）は様々な色の正方形を積み重ねた抽象的な構成の作品。バウハウスでの色彩理論研究を反映したグリッド状の構成が特徴で、音楽的なリズムを感じさせる。"},{"genre":"作品・絵画","question":"クレーの作品に頻繁に登場するモチーフとして代表的でないものは？","choices":["魚","天使","植物","馬車"],"answer":3,"explanation":"クレーの作品には魚・天使・植物・矢・目・顔・建物など多様なモチーフが繰り返し登場する。馬車は彼の主要なモチーフには含まれず、乗り物系のモチーフとしては船の方が多く登場する。"},{"genre":"作品・絵画","question":"クレーの素描における「矢」のモチーフが表すものとして正しいのは？","choices":["攻撃性","方向性・力・動き","富","失敗"],"answer":1,"explanation":"クレーの作品に頻繁に登場する「矢」は、方向性・力・動きを象徴するモチーフ。彼の造形理論における「線の能動性」を視覚化したものとして解釈されることが多い。"},{"genre":"作品・絵画","question":"クレーの「成長する植物」シリーズが示すテーマは？","choices":["農業の発展","自然の内的な生長の法則","環境問題への警鐘","田園への回帰"],"answer":1,"explanation":"クレーは植物の生長を自然の内的な法則の可視化として捉えた。「成長する植物」シリーズは、目に見えない生命力や生長のプロセスを線と形で表現しようとした試みである。"},{"genre":"作品・絵画","question":"クレーの「都市の遠近法」（1928年）の特徴は？","choices":["完全なリアリズム","幾何学的な線による都市の抽象化","コラージュ技法","人物のみの描写"],"answer":1,"explanation":"「都市の遠近法」は幾何学的な線と面によって都市空間を抽象化した作品。透視図法の概念を分解・再構成することで、都市の本質的な構造を視覚化しようとしている。"},{"genre":"作品・絵画","question":"クレーが好んで素材として使用したものとして誤っているのは？","choices":["新聞紙","ガーゼ","大理石","厚紙"],"answer":2,"explanation":"クレーは新聞紙・ガーゼ・厚紙・布など様々な素材を支持体として使用したが、大理石は使用していない。彼の実験的な素材への探求は、作品の独自性を生み出す重要な要素だった。"},{"genre":"生涯・エピソード","question":"クレーが青騎士グループの展覧会に初めて参加したのは何年？","choices":["1910年","1911年","1912年","1913年"],"answer":2,"explanation":"クレーは1912年に開催された第2回青騎士展に参加した。カンディンスキーを通じてグループと交流し、彼らの精神主義的な芸術観に共鳴しながらも独自の道を歩んだ。"},{"genre":"生涯・エピソード","question":"クレーが最初にカンディンスキーと出会った場所は？","choices":["バウハウス","ミュンヘン","チュニジア","ベルン"],"answer":1,"explanation":"クレーとカンディンスキーはミュンヘンで出会い、深い友情を築いた。後にバウハウスで同僚となり、デッサウでは隣同士に住むなど、生涯を通じて芸術上の盟友として影響し合った。"},{"genre":"生涯・エピソード","question":"クレーがイタリアに旅行した際に感じた複雑な思いとして正しいのは？","choices":["古典美術への純粋な感動","古典の偉大さと現代に合わないという葛藤","伝統を学ぼうという強い意志","芸術家になることへの決意"],"answer":1,"explanation":"若いクレーはイタリアでルネサンスの巨匠たちの作品に感動しつつも、それらが「今の時代にそぐわない」という違和感を覚えた。この葛藤が後の独自の芸術開発への原動力となった。"},{"genre":"生涯・エピソード","question":"チュニジア旅行でクレーとともに訪れた芸術家として正しいのは？","choices":["カンディンスキーとマルク","マッケとモワイエ","ピカソとブラック","グロピウスとシュレンマー"],"answer":1,"explanation":"1914年のチュニジア旅行には、アウグスト・マッケとルイ・モワイエがクレーに同行した。マッケは翌年の第一次世界大戦で戦死し、クレーはその死を深く悲しんだ。"},{"genre":"生涯・エピソード","question":"クレーが「自筆総目録」として作品を記録し始めたのはいつ頃から？","choices":["1900年頃","1905年頃","1910年頃","1915年頃"],"answer":1,"explanation":"クレーは1905年のミュンヘン分離派展への出展作品を「作品番号1番」として、生涯にわたって自身の全作品を記録した「自筆総目録（Œuvre-Katalog）」を作成した。この克明な記録は研究者にとって貴重な資料である。"},{"genre":"生涯・エピソード","question":"クレーのスイス市民権取得について正しいのは？","choices":["生まれつきスイス国籍を持っていた","1933年の亡命後に申請したが死の直後に承認された","バウハウス在籍中に取得した","ドイツ国籍を保ったまま亡くなった"],"answer":1,"explanation":"クレーはスイス人の父とドイツ人の母を持ち、国籍問題は複雑だった。ナチスに追われてスイスに亡命後、市民権を申請したが承認されたのは1940年6月—クレーが亡くなる数日後のことだった。"},{"genre":"生涯・エピソード","question":"フランツ・マルクとクレーの関係として正しいのは？","choices":["師弟関係","親友・芸術上の同志","ライバル関係","全く接触がなかった"],"answer":1,"explanation":"フランツ・マルクはクレーの親友であり、青騎士グループの中心人物。第一次世界大戦で戦死し、クレーはその死を深く悼んだ。二人の友情は手紙を通じて詳細に記録されている。"},{"genre":"生涯・エピソード","question":"クレーが住んでいたマイスターハウスの隣人は誰？","choices":["グロピウス","シュレンマー","カンディンスキー","モホリ＝ナジ"],"answer":2,"explanation":"デッサウのマイスターハウスでは、クレーとカンディンスキーが双子棟の隣同士に住んでいた。日常的に交流し、芸術について深く語り合った二人の関係はバウハウスの精神を象徴するものだった。"},{"genre":"生涯・エピソード","question":"クレーが従軍した際の役職は？","choices":["前線将校","航空機のカモフラージュ担当","軍の画家","物資輸送担当"],"answer":1,"explanation":"クレーは第一次世界大戦中、飛行機のカモフラージュ（迷彩塗装）を担当する任務に就いた。前線には送られず比較的安全な場所にいたが、友人の戦死という体験は彼の内面に深い影を落とした。"},{"genre":"生涯・エピソード","question":"クレーがバウハウスに招かれたきっかけを作った人物は？","choices":["カンディンスキー","グロピウス","シュレンマー","イッテン"],"answer":1,"explanation":"ワルター・グロピウスがクレーをバウハウスに招いた。グロピウスはクレーの独自の芸術性と理論的思考を高く評価し、バウハウスの教師として招聘した。"},{"genre":"生涯・エピソード","question":"クレーの母親の職業は？","choices":["教師","声楽家","ピアニスト","画家"],"answer":1,"explanation":"クレーの母アイダ・マリア・フリック（クレー）はスイス出身の声楽家だった。音楽的な才能に恵まれた母からクレーは音楽への愛を受け継ぎ、それが彼の芸術世界に深く影響した。"},{"genre":"バウハウス","question":"バウハウスでクレーが教えた色彩論の特徴として正しいのは？","choices":["写実的な色の使い方","色と感情・音楽の関係への探求","印象派的な色彩分割","商業デザインへの応用"],"answer":1,"explanation":"クレーのバウハウスでの色彩論は、色と感情・音楽的リズム・精神的な意味との関係を探求するものだった。単なる技術的な色の扱い方ではなく、色彩の内的な意味を追求した独自の理論体系を構築した。"},{"genre":"バウハウス","question":"バウハウスで「舞台芸術」工房を担当したのは？","choices":["クレー","カンディンスキー","オスカー・シュレンマー","モホリ＝ナジ"],"answer":2,"explanation":"オスカー・シュレンマーがバウハウスの舞台芸術工房を担当した。「トリアディック・バレエ」など先駆的な舞台作品を生み出し、身体と空間の関係を探求した。"},{"genre":"バウハウス","question":"バウハウスの教育システムで「マイスター」とは何を指す？","choices":["最優秀学生","工房長・教師","卒業生","名誉教授"],"answer":1,"explanation":"バウハウスでは教師を「マイスター（親方）」と呼んだ。職人的な師弟関係をモデルにした呼称で、芸術的なマイスターと技術的なマイスターが共同で工房を担当する体制だった。"},{"genre":"バウハウス","question":"バウハウスが「ゲザムトクンストヴェルク（総合芸術）」を目指した理由として正しいのは？","choices":["コストを削減するため","様々な芸術形式を統合して理想の環境を作るため","商業的な成功のため","政府の要請のため"],"answer":1,"explanation":"バウハウスはワーグナーの「ゲザムトクンストヴェルク（総合芸術作品）」の概念に触発され、建築・絵画・工芸・舞台など全ての芸術形式を統合した理想的な生活環境の創造を目指した。"},{"genre":"バウハウス","question":"バウハウスの「デッサウ時代」に特に発展した分野は？","choices":["純粋絵画","工業デザイン・プロダクトデザイン","彫刻","写真のみ"],"answer":1,"explanation":"デッサウ時代のバウハウスは工業デザインとプロダクトデザインが特に発展した。量産品への応用を念頭に置いたデザイン教育が充実し、現代のインダストリアルデザインの原型が作られた。"},{"genre":"思想・名言","question":"クレーが「能動性」を「自由」と区別した理由として正しいのは？","choices":["自由は法律で保証されるから","自由だけでは方向性がなく内なる衝動が重要だから","自由は個人的すぎるから","政治的な理由から"],"answer":1,"explanation":"クレーにとって「自由（縛られていない状態）」だけでは創造の方向性が生まれない。「能動性」とは内側から溢れ出す衝動・エネルギーであり、それこそが真の創造力の源泉だと考えた。"},{"genre":"思想・名言","question":"クレーが「芸術家は媒介者である」と述べた際、何の媒介者とした？","choices":["過去と未来","自然・宇宙の法則と観る者","作家と批評家","職人と芸術家"],"answer":1,"explanation":"クレーは芸術家を自然・宇宙の深層的な法則と観る者の間の「媒介者」と定義した。芸術家は独創的な神ではなく、目に見えないものを可視化するチャンネルであるという謙虚な芸術観を示している。"},{"genre":"思想・名言","question":"クレーが多様な支持体・画材を使用した哲学的な理由として最も適切なのは？","choices":["経済的な理由","素材自体の持つ表現可能性の探求","バウハウスの規定","流行への追従"],"answer":1,"explanation":"クレーは素材そのものが持つ表現の可能性を積極的に探求した。新聞紙の既存のテキストやガーゼの透明性など、素材の特性が作品の意味に加わることで、より豊かな表現が生まれると考えた。"},{"genre":"思想・名言","question":"クレーの芸術思想において「宇宙」との関係で重要なのは？","choices":["宇宙の征服","宇宙の法則の観察と可視化","宇宙からの逃避","宇宙の神秘の回避"],"answer":1,"explanation":"クレーは宇宙（コスモス）の法則——自然の生長、物理的な力、精神的な秩序——を観察し、それを絵画を通じて可視化することが芸術の使命だと考えた。"},{"genre":"思想・名言","question":"クレーが晩年の天使シリーズで探求したテーマは？","choices":["宗教的な救済","不完全さと死の受容","天国の描写","キリスト教の伝道"],"answer":1,"explanation":"晩年の天使シリーズは、強皮症という病と死の予感の中で制作された。クレーの天使たちは聖なる完全な存在ではなく、「始まったばかり」「まだできていない」など不完全で人間的な存在として描かれている。"},{"genre":"思想・名言","question":"クレーが教育において最も重視したことは？","choices":["技術の完全な習得","観察力と内的感性の発達","芸術史の知識","商業的な成功"],"answer":1,"explanation":"クレーはバウハウスでの教育において、技術的なスキルよりも学生の観察力と内的感性（「見る目」）を育てることを重視した。この教育哲学は現代の芸術教育にも大きな影響を与えている。"},{"genre":"思想・名言","question":"クレーが「散歩に出かけた点」と表現したものは？","choices":["子ども","芸術家","線","旅人"],"answer":2,"explanation":"「線とは、ある地点から別の地点へと、目的もなく散歩に出かけた点である」というクレーの言葉は、線を静的な形ではなく動的なプロセスとして捉える彼の造形思想を端的に示している。"},{"genre":"思想・名言","question":"クレーが芸術において「時間」の概念を重視した理由は？","choices":["締め切りへの意識","線や形の生成プロセスが時間を含むから","音楽との類似性のみ","展覧会のスケジュール"],"answer":1,"explanation":"クレーは絵画を「時間の中の出来事」として捉えた。線を引く行為、色を置く行為はすべて時間の中で起こるプロセスであり、完成した絵画にはそのプロセスの痕跡が含まれていると考えた。"},{"genre":"作品・絵画","question":"クレーの作品「ポリフォニー」が参照している概念は？","choices":["詩の構造","音楽の対位法","建築の設計図","数学の方程式"],"answer":1,"explanation":"「ポリフォニー」（1932年）はバッハの対位法（複数の旋律が同時進行する音楽技法）から着想を得た作品。様々な色の小さな正方形が複雑に絡み合い、視覚的な「多声音楽」を作り出している。"},{"genre":"作品・絵画","question":"クレーの「夢の都市」（Traum-Stadt）シリーズの特徴は？","choices":["リアルな都市の記録","記憶と想像が混ざった幻想的な都市空間","SF的な未来都市","過去の廃墟"],"answer":1,"explanation":"クレーの都市をテーマにした作品群は、実在の都市を写実的に描くのではなく、記憶・夢・想像力が交差する幻想的な空間として表現している。建築的な要素が詩的・抽象的に変容されている。"},{"genre":"作品・絵画","question":"クレーが「分割主義」的な技法を用いた作品の特徴は？","choices":["キャンバスを物理的に分割","小さな色点や色面を並べて全体を構成","画面を二分割して対比を作る","複数のパネルを組み合わせる"],"answer":1,"explanation":"クレーは印象派・点描派の「分割主義」的な手法を独自に発展させ、小さな色の面や点を並べることで全体の色彩効果を作り出す技法を使用した。チュニジア旅行後の水彩画群にその傾向が見られる。"},{"genre":"生涯・エピソード","question":"クレーがバウハウスに赴任する前の主な収入源は？","choices":["絵画の販売","妻のピアノ教室の収入","実家からの援助","音楽活動"],"answer":1,"explanation":"バウハウスに就任する前、クレーの家庭の主な収入は妻リリーのピアノ教師としての収入だった。クレー自身の絵画販売による収入は不安定で、リリーの支えがあってこそ創作に専念できた。"},{"genre":"生涯・エピソード","question":"クレーが美術評論家・ヴィルヘルム・ハウゼンシュタインに発掘された年代は？","choices":["1910年代初頭","1910年代後半","1920年代初頭","1920年代後半"],"answer":1,"explanation":"クレーは1910年代後半から批評家たちに注目され始めた。ハウゼンシュタインらによる批評が広まり、画商ゴルツとの契約、1920年の大回顧展へとつながった。"},{"genre":"生涯・エピソード","question":"クレーが「退廃芸術」として弾圧された直接的な理由は？","choices":["ユダヤ人だったから","モダニズム芸術を制作したから","共産主義者だったから","外国人だったから"],"answer":1,"explanation":"ナチスはクレーを含むモダニズム・前衛芸術家を「退廃芸術家」として弾圧した。「退廃芸術」展ではクレーの102点が展示され、大衆に「悪い芸術の例」として晒された。"},{"genre":"生涯・エピソード","question":"クレーの作品を収蔵する最も多くの作品を持つ機関はどこ？","choices":["ニューヨーク近代美術館","ルーヴル美術館","ツェントルム・パウル・クレー","テート・モダン"],"answer":2,"explanation":"スイス・ベルンのツェントルム・パウル・クレーが世界最大のクレーコレクションを誇り、約4000点以上の作品を収蔵している。"},{"genre":"思想・名言","question":"クレーが「原始芸術」（子どもの絵・民族芸術）に共感した理由は？","choices":["技術的に学ぶ点があるから","文明的な規範から解放された純粋な表現があるから","商業的な価値があるから","バウハウスの方針だったから"],"answer":1,"explanation":"クレーは子どもの絵や非西洋の民族芸術に、技術的な「うまさ」を超えた純粋な表現力を見出した。社会的な規範や学習された技術から解放された状態にこそ、芸術の本質が宿ると考えた。"},{"genre":"作品・絵画","question":"クレーの「アドヴェンチャーラーの船（冒険者の船）」が示すテーマとして最も適切なのは？","choices":["海洋探検の記録","未知への旅と冒険精神","軍事的な航海","商業的な航海"],"answer":1,"explanation":"「冒険者の船」は未知の領域への旅と探求精神を象徴する作品。クレーが好んだ「旅」のモチーフは、外的な旅行だけでなく芸術的・精神的な探求の旅を意味している。"},{"genre":"バウハウス","question":"バウハウスの「予備課程」の目的として最も正確なのは？","choices":["美術史の学習","素材・色彩・形の基礎的な探求","就職のための技術習得","古典技法の習得"],"answer":1,"explanation":"バウハウスの予備課程は、学生が先入観なく素材・色彩・形と向き合い、基礎的な造形感覚を育てることを目的とした。イッテン、後にモホリ＝ナジが担当し、現代デザイン教育の基礎となった。"},{"genre":"思想・名言","question":"クレーが「絵画と音楽の関係」について述べた見解として正しいのは？","choices":["全く別のものである","時間と空間という違いはあるが共通する法則がある","音楽の方が優れている","絵画は音楽を模倣すべきだ"],"answer":1,"explanation":"クレーは絵画と音楽がリズム・対位法・ポリフォニーなど共通する構造的法則を持つと考えた。音楽が時間の芸術であるのに対し絵画は空間の芸術だが、その深層には共鳴する原理があると述べた。"},{"genre":"生涯・エピソード","question":"クレーが子どもの頃に才能を示した芸術分野は？","choices":["絵画","彫刻","ヴァイオリン","詩"],"answer":2,"explanation":"クレーは11歳でプロのオーケストラに参加するほどのヴァイオリンの才能を示した。音楽家か画家かで長く迷い、最終的に18歳で美術の道を選んだが、音楽は生涯にわたって彼の芸術に深く影響した。"},{"genre":"作品・絵画","question":"クレーの「壁画」（Wandbild）シリーズで探求されたのは？","choices":["実際の建築への絵画装飾","平面上での空間と構造の表現","壁の素材感の模倣","フレスコ技法"],"answer":1,"explanation":"クレーは「壁画」をタイトルに含む作品で、建築的な構造と平面的な色彩の関係を探求した。実際の建築装飾ではなく、絵画面における空間と構造の表現原理を追求したものである。"},{"genre":"バウハウス","question":"バウハウスの「工房システム」の特徴として正しいのは？","choices":["一人の教師が全てを教える","芸術的マイスターと技術的マイスターが共同で指導する","学生が自由に学ぶ","外部の職人を招いて指導する"],"answer":1,"explanation":"バウハウス独自の「工房システム」では、芸術的なマイスター（画家・彫刻家など）と技術的なマイスター（職人・技師など）が共同で工房を担当した。芸術と技術の統合というバウハウスの理念を実践した教育システムである。"}];
+const GC = {'作品・絵画':'bc','生涯・エピソード':'bt','思想・名言':'bb','バウハウス':'ba'};
+const MSGS = ['まだ旅の始まり。クレーの世界は深い。','少しずつ心眼が開いてきた。','クレーの線の意味が見えてきたね。','バウハウスの空気を感じ始めてる。','クレーの目で世界が見えるようになってきた。','色彩があなたをとらえた。','線が語り、色が踊り、心眼が開いた。'];
+let qs=[],cur=0,score=0,xp=0,lv=1,answered=false,revOpen=false;
+let totalPlayed=0,totalCorrect=0;
+
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function updateXP(){const p=(xp%100)/100*100;document.getElementById('xpBar').style.width=p+'%';document.getElementById('lvLabel').textContent='Lv.'+lv;document.getElementById('xpLabel').textContent=(xp%100)+' / 100 XP';}
+function updateStats(){
+  document.getElementById('stTotal').textContent=totalPlayed;
+  document.getElementById('stCorrect').textContent=totalCorrect;
+  document.getElementById('stRate').textContent=totalPlayed>0?Math.round(totalCorrect/totalPlayed*100)+'%':'—';
+}
+
+function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
+
+function startQuiz(){
+  document.getElementById('startBtn').disabled=true;
+  qs=shuffle([...ALL]).slice(0,10);
+  cur=0;score=0;answered=false;
+  showQ();show('sQuiz');
+}
+
+function showQ(){
+  const q=qs[cur];
+  document.getElementById('qCount').textContent=(cur+1)+' / '+qs.length;
+  const ge=document.getElementById('qGenre');
+  ge.textContent=q.genre;ge.className='q-genre badge '+(GC[q.genre]||'bb');
+  document.getElementById('qText').textContent=q.question;
+  const w=document.getElementById('choicesWrap');w.innerHTML='';
+  q.choices.forEach((c,i)=>{
+    const b=document.createElement('button');
+    b.className='choice';b.textContent=c;b.onclick=()=>select(i);w.appendChild(b);
+  });
+  document.getElementById('expSection').style.display='none';
+  document.getElementById('ansBox').style.display='none';
+  document.getElementById('revealArrow').textContent='▶';
+  document.getElementById('nextBtn').style.display='none';
+  revOpen=false;answered=false;
+}
+
+function select(idx){
+  if(answered)return;answered=true;
+  const q=qs[cur];const ok=idx===q.answer;
+  if(ok)score++;
+  totalPlayed++;if(ok)totalCorrect++;
+  document.querySelectorAll('.choice').forEach((b,i)=>{
+    b.disabled=true;
+    if(i===q.answer)b.classList.add('ok');
+    else if(i===idx&&!ok)b.classList.add('ng');
+  });
+  document.getElementById('expSection').style.display='';
+  const rb=document.getElementById('revealBtn');
+  const ab=document.getElementById('ansBox');
+  if(ok){rb.style.display='none';}
+  else{rb.style.display='flex';ab.textContent='正解：'+q.choices[q.answer];}
+  const eb=document.getElementById('expBox');
+  eb.className=ok?'exp-box':'exp-box ng';
+  eb.textContent=(ok?'✓ 正解！ ':'✗ 不正解。')+q.explanation;
+  document.getElementById('nextBtn').style.display='';
+}
+
+function toggleReveal(){
+  revOpen=!revOpen;
+  document.getElementById('ansBox').style.display=revOpen?'block':'none';
+  document.getElementById('revealArrow').textContent=revOpen?'▼':'▶';
+}
+
+function next(){cur++;if(cur>=qs.length)showResult();else showQ();}
+
+function showResult(){
+  const gained=score*10;const oldLv=lv;
+  xp+=gained;lv=Math.min(5,Math.floor(xp/100)+1);
+  updateXP();updateStats();
+  document.getElementById('rScore').textContent=score+' / '+qs.length;
+  const lb=document.getElementById('lvBadge');
+  if(lv>oldLv){lb.style.display='inline-flex';lb.textContent='⭐ Lv.'+lv+' にレベルアップ！';}
+  else{lb.style.display='none';}
+  document.getElementById('rMsg').textContent=MSGS[Math.min(score,MSGS.length-1)];
+  show('sResult');
+}
+
+function reset(){document.getElementById('startBtn').disabled=false;updateStats();show('sStart');}
+updateXP();updateStats();
+</script>
+</body>
+</html>
